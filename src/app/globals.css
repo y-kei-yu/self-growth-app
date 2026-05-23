@@ -24,3 +24,48 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* FullCalendarのダークモード対応スタイル上書き */
+/* FullCalendarは自分のCSSを持っているので、ダークモード時に色を上書きする */
+@media (prefers-color-scheme: dark) {
+  /* カレンダー全体の背景と文字色 */
+  .fc .fc-scrollgrid,
+  .fc .fc-daygrid-body {
+    background-color: transparent;
+  }
+
+  /* ヘッダー（タイトル・ボタン）の色 */
+  .fc .fc-toolbar-title {
+    color: #e5e7eb;
+  }
+  .fc .fc-button {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+  }
+  .fc .fc-button:hover {
+    background-color: #4b5563;
+  }
+
+  /* 曜日ヘッダー */
+  .fc .fc-col-header-cell-cushion {
+    color: #9ca3af;
+  }
+
+  /* 日付の数字 */
+  .fc .fc-daygrid-day-number {
+    color: #d1d5db;
+  }
+
+  /* グリッド線の色 */
+  .fc .fc-scrollgrid-section > td,
+  .fc td,
+  .fc th {
+    border-color: #374151;
+  }
+
+  /* 今日のハイライト */
+  .fc .fc-day-today {
+    background-color: rgba(22, 163, 74, 0.1) !important;
+  }
+}

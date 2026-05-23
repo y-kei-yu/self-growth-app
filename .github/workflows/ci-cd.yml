@@ -1,0 +1,79 @@
+# GitHub Actions ワークフロー
+# 役割: mainブランチにpushされたとき、テストを実行してVercelにデプロイする
+
+name: CI/CD
+
+# このワークフローを実行するタイミング
+on:
+  push:
+    branches: [main] # mainブランチへのpush時
+  pull_request:
+    branches: [main] # mainへのプルリクエスト時
+
+jobs:
+  # ---- ① テストジョブ ----
+  test:
+    name: テスト実行
+    runs-on: ubuntu-latest # GitHubのLinuxサーバーで実行する
+
+    steps:
+      # リポジトリのコードをサーバーにダウンロードする
+      - name: コードをチェックアウト
+        uses: actions/checkout@v4
+
+      # Node.jsをセットアップする
+      - name: Node.jsをセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm" # node_modulesをキャッシュして高速化
+
+      # 依存パッケージをインストールする
+      # npm ci = package-lock.jsonに従って確実に同じバージョンをインストール
+      - name: 依存パッケージをインストール
+        run: npm ci
+
+      # vitestでテストを実行する
+      - name: テストを実行
+        run: npm test
+
+  # ---- ② デプロイジョブ ----
+  deploy:
+    name: Vercelにデプロイ
+    runs-on: ubuntu-latest
+    needs: test # testジョブが成功したときだけ実行する
+    if: github.ref == 'refs/heads/main' # mainブランチのpushのみデプロイ
+
+    steps:
+      - name: コードをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.jsをセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 依存パッケージをインストール
+        run: npm ci
+
+      # Vercelの設定情報をサーバーに取得する
+      - name: Vercel設定を取得
+        run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # アプリを本番用にビルドする
+      - name: アプリをビルド
+        run: npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # Vercelに公開する
+      - name: Vercelにデプロイ
+        run: npx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
