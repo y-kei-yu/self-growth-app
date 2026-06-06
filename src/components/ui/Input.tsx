@@ -25,7 +25,7 @@ export function Input({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className={`flex-1 px-4 py-2.5 rounded-xl border text-sm transition-colors
+      className={`flex-1 px-4 py-2.5 rounded-xl border text-base transition-colors
         bg-white dark:bg-gray-700
         border-gray-200 dark:border-gray-600
         text-gray-800 dark:text-gray-100
