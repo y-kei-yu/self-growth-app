@@ -41,14 +41,16 @@ export function CalendarView({ dayRecords }: Props) {
   );
 
   return (
-    <div className="space-y-4">
-      {/* カレンダー本体 */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4">
+    // 画面の高さからヘッダー・タブバー・パディング分を引いた高さに固定
+    // calc(100dvh - 200px): スクロールなしでカレンダーが収まるよう計算
+    <div className="flex flex-col gap-3" style={{ height: "calc(100dvh - 200px)" }}>
+      {/* カレンダー本体（残りの高さを全部使う） */}
+      <div className="flex-1 min-h-0 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-3 overflow-hidden">
         <FullCalendarInner events={events} />
       </div>
 
       {/* 凡例（色の意味の説明） */}
-      <div className="flex gap-6 justify-center text-xs text-gray-400 dark:text-gray-500">
+      <div className="flex gap-6 justify-center text-xs text-gray-400 dark:text-gray-500 shrink-0">
         <span className="flex items-center gap-1.5">
           <span className="w-3 h-3 bg-green-400 rounded-sm inline-block" />
           達成

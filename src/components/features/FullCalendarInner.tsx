@@ -28,7 +28,8 @@ export default function FullCalendarInner({ events }: Props) {
         center: "title",
         right: "next",
       }}
-      height="auto"
+      height="100%" // 親要素の高さいっぱいに表示
+      fixedWeekCount={false} // 月に必要な週数だけ表示（6行→5行になることも）
     />
   );
 }

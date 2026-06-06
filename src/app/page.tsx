@@ -105,7 +105,11 @@ export default function Home() {
         </main>
 
         {/* 下部タブナビゲーション（固定表示） */}
-        <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex justify-around py-2 shadow-sm">
+        {/* pb-safe: iPhone のホームバー分の余白を自動で追加 */}
+        <nav
+          className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex justify-around shadow-sm"
+          style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
+        >
           {(
             [
               { key: "today", label: "今日", icon: CheckIcon },
@@ -116,7 +120,8 @@ export default function Home() {
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`flex flex-col items-center gap-0.5 px-6 py-1 text-xs transition-colors ${
+              // py-3・px-8 でタップしやすい大きさに
+              className={`flex flex-col items-center gap-1 px-8 pt-3 pb-1 text-xs transition-colors ${
                 tab === key
                   ? "text-green-600 dark:text-green-400 font-semibold"
                   : "text-gray-400 dark:text-gray-500"
