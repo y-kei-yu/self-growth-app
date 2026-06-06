@@ -66,6 +66,11 @@ src/
 - 変更前に必ず何をするか説明してから実装する
 - 初めてのAI開発なので初心者にもわかるように何をしているか教えてください
 
+## CI/CD
+
+- GitHub Actions で自動テスト＆Vercelデプロイ（mainブランチへのpush時）
+- Secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+
 ## テスト方針
 
 - vitestを使用してユニットテストを書く
