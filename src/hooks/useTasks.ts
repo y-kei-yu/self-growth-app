@@ -11,15 +11,21 @@ import {
   calcCompletionRate,
   isAchieved,
 } from "@/lib/storage";
-import { AppStorage, DailyTask, FixedTask } from "@/lib/types";
+import {
+  AppStorage,
+  DailyTask,
+  FixedTask,
+  NotificationSettings,
+} from "@/lib/types";
 
 export function useTasks() {
   const [storage, setStorage] = useState<AppStorage | null>(null);
+  // YYYY-MM-DD
   const today = getTodayStr();
 
   useEffect(() => {
     const s = loadStorage();
-    // Seed today's tasks if not yet created
+    // 今日のタスクがない場合は作成して保存
     if (!s.dailyTasks[today]) {
       const tasks = getOrCreateDailyTasks(s, today);
       s.dailyTasks[today] = tasks;
@@ -28,14 +34,17 @@ export function useTasks() {
     setStorage(s);
   }, [today]);
 
-  const updateStorage = useCallback((updater: (s: AppStorage) => AppStorage) => {
-    setStorage((prev) => {
-      if (!prev) return prev;
-      const next = updater(prev);
-      saveStorage(next);
-      return next;
-    });
-  }, []);
+  const updateStorage = useCallback(
+    (updater: (s: AppStorage) => AppStorage) => {
+      setStorage((prev) => {
+        if (!prev) return prev;
+        const next = updater(prev);
+        saveStorage(next);
+        return next;
+      });
+    },
+    [],
+  );
 
   const todayTasks: DailyTask[] = storage?.dailyTasks[today] ?? [];
 
@@ -43,13 +52,13 @@ export function useTasks() {
     (taskId: string) => {
       updateStorage((s) => {
         const tasks = (s.dailyTasks[today] ?? []).map((t) =>
-          t.id === taskId ? { ...t, completed: !t.completed } : t
+          t.id === taskId ? { ...t, completed: !t.completed } : t,
         );
         const next = { ...s, dailyTasks: { ...s.dailyTasks, [today]: tasks } };
         return saveDayRecord(next, today, tasks);
       });
     },
-    [today, updateStorage]
+    [today, updateStorage],
   );
 
   const addTodayTask = useCallback(
@@ -67,18 +76,20 @@ export function useTasks() {
         return saveDayRecord(next, today, tasks);
       });
     },
-    [today, updateStorage]
+    [today, updateStorage],
   );
 
   const removeTodayTask = useCallback(
     (taskId: string) => {
       updateStorage((s) => {
-        const tasks = (s.dailyTasks[today] ?? []).filter((t) => t.id !== taskId);
+        const tasks = (s.dailyTasks[today] ?? []).filter(
+          (t) => t.id !== taskId,
+        );
         const next = { ...s, dailyTasks: { ...s.dailyTasks, [today]: tasks } };
         return saveDayRecord(next, today, tasks);
       });
     },
-    [today, updateStorage]
+    [today, updateStorage],
   );
 
   const addFixedTask = useCallback(
@@ -107,14 +118,14 @@ export function useTasks() {
         return saveDayRecord(next, today, todayList);
       });
     },
-    [today, updateStorage]
+    [today, updateStorage],
   );
 
   const removeFixedTask = useCallback(
     (fixedTaskId: string) => {
       updateStorage((s) => {
         const tasks = (s.dailyTasks[today] ?? []).filter(
-          (t) => t.fixedTaskId !== fixedTaskId
+          (t) => t.fixedTaskId !== fixedTaskId,
         );
         const next = {
           ...s,
@@ -124,7 +135,14 @@ export function useTasks() {
         return saveDayRecord(next, today, tasks);
       });
     },
-    [today, updateStorage]
+    [today, updateStorage],
+  );
+
+  const updateNotificationSettings = useCallback(
+    (settings: NotificationSettings) => {
+      updateStorage((s) => ({ ...s, notificationSettings: settings }));
+    },
+    [updateStorage],
   );
 
   const completionRate = calcCompletionRate(todayTasks);
@@ -140,5 +158,6 @@ export function useTasks() {
     removeTodayTask,
     addFixedTask,
     removeFixedTask,
+    updateNotificationSettings,
   };
 }

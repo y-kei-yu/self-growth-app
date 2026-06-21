@@ -9,8 +9,13 @@ import {
   registerServiceWorker,
   checkAndNotify,
 } from "@/lib/notifications";
+import { NotificationSettings } from "@/lib/types";
+import { getActiveNotificationTimes } from "@/lib/storage";
 
-export function useNotifications(isAchieved: boolean) {
+export function useNotifications(
+  isAchieved: boolean,
+  notificationSettings: NotificationSettings,
+) {
   // 通知の許可状態（"default"=未回答, "granted"=許可, "denied"=拒否）
   const [permission, setPermission] =
     useState<NotificationPermission>("default");
@@ -35,11 +40,17 @@ export function useNotifications(isAchieved: boolean) {
   // 30秒ごとに「今、通知すべき時間か？」をチェックする
   useEffect(() => {
     if (!swReady) return;
-    const check = () => checkAndNotify(isAchieved);
+    const check = () => {
+      const notificationTime = getActiveNotificationTimes(
+        notificationSettings,
+        new Date(),
+      );
+      checkAndNotify(isAchieved, notificationTime);
+    };
     check(); // ページ読み込み時に1回すぐ確認
     const interval = setInterval(check, 30_000); // 30秒ごとに確認
     return () => clearInterval(interval); // コンポーネント終了時にタイマーを止める
-  }, [isAchieved, swReady]);
+  }, [isAchieved, swReady, notificationSettings]);
 
   // 通知許可を求めるボタンから呼ばれる関数
   const askPermission = useCallback(async () => {

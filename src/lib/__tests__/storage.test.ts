@@ -9,6 +9,8 @@ import {
   saveDayRecord,
   getOrCreateDailyTasks,
   getTodayStr,
+  isHoliday,
+  getActiveNotificationTimes,
 } from "../storage";
 import type { DailyTask, AppStorage } from "../types";
 
@@ -31,6 +33,10 @@ function makeStorage(overrides: Partial<AppStorage> = {}): AppStorage {
     dayRecords: {},
     notificationPermission: false,
     lastResetDate: "2026-05-23",
+    notificationSettings: {
+      weekday: { enabled: true, times: [] },
+      holiday: { enabled: true, times: [] },
+    },
     ...overrides,
   };
 }
@@ -82,7 +88,11 @@ describe("isAchieved（70%以上で達成判定）", () => {
   });
 
   it("100%完了のとき、達成になる", () => {
-    const tasks = [makeTask("1", true), makeTask("2", true), makeTask("3", true)];
+    const tasks = [
+      makeTask("1", true),
+      makeTask("2", true),
+      makeTask("3", true),
+    ];
     expect(isAchieved(tasks)).toBe(true);
   });
 });
@@ -103,7 +113,13 @@ describe("calcStreak（連続達成日数の計算）", () => {
     vi.setSystemTime(new Date("2026-05-23T10:00:00"));
 
     const dayRecords = {
-      "2026-05-23": { date: "2026-05-23", achieved: true, completionRate: 1, totalTasks: 1, completedTasks: 1 },
+      "2026-05-23": {
+        date: "2026-05-23",
+        achieved: true,
+        completionRate: 1,
+        totalTasks: 1,
+        completedTasks: 1,
+      },
     };
     expect(calcStreak(dayRecords)).toBe(1);
   });
@@ -112,9 +128,27 @@ describe("calcStreak（連続達成日数の計算）", () => {
     vi.setSystemTime(new Date("2026-05-23T10:00:00"));
 
     const dayRecords = {
-      "2026-05-21": { date: "2026-05-21", achieved: true, completionRate: 1, totalTasks: 1, completedTasks: 1 },
-      "2026-05-22": { date: "2026-05-22", achieved: true, completionRate: 1, totalTasks: 1, completedTasks: 1 },
-      "2026-05-23": { date: "2026-05-23", achieved: true, completionRate: 1, totalTasks: 1, completedTasks: 1 },
+      "2026-05-21": {
+        date: "2026-05-21",
+        achieved: true,
+        completionRate: 1,
+        totalTasks: 1,
+        completedTasks: 1,
+      },
+      "2026-05-22": {
+        date: "2026-05-22",
+        achieved: true,
+        completionRate: 1,
+        totalTasks: 1,
+        completedTasks: 1,
+      },
+      "2026-05-23": {
+        date: "2026-05-23",
+        achieved: true,
+        completionRate: 1,
+        totalTasks: 1,
+        completedTasks: 1,
+      },
     };
     expect(calcStreak(dayRecords)).toBe(3);
   });
@@ -123,10 +157,34 @@ describe("calcStreak（連続達成日数の計算）", () => {
     vi.setSystemTime(new Date("2026-05-23T10:00:00"));
 
     const dayRecords = {
-      "2026-05-20": { date: "2026-05-20", achieved: true, completionRate: 1, totalTasks: 1, completedTasks: 1 },
-      "2026-05-21": { date: "2026-05-21", achieved: false, completionRate: 0.5, totalTasks: 2, completedTasks: 1 },
-      "2026-05-22": { date: "2026-05-22", achieved: true, completionRate: 1, totalTasks: 1, completedTasks: 1 },
-      "2026-05-23": { date: "2026-05-23", achieved: true, completionRate: 1, totalTasks: 1, completedTasks: 1 },
+      "2026-05-20": {
+        date: "2026-05-20",
+        achieved: true,
+        completionRate: 1,
+        totalTasks: 1,
+        completedTasks: 1,
+      },
+      "2026-05-21": {
+        date: "2026-05-21",
+        achieved: false,
+        completionRate: 0.5,
+        totalTasks: 2,
+        completedTasks: 1,
+      },
+      "2026-05-22": {
+        date: "2026-05-22",
+        achieved: true,
+        completionRate: 1,
+        totalTasks: 1,
+        completedTasks: 1,
+      },
+      "2026-05-23": {
+        date: "2026-05-23",
+        achieved: true,
+        completionRate: 1,
+        totalTasks: 1,
+        completedTasks: 1,
+      },
     };
     // 21日に途切れているので、22〜23日の2日連続
     expect(calcStreak(dayRecords)).toBe(2);
@@ -137,7 +195,11 @@ describe("calcStreak（連続達成日数の計算）", () => {
 describe("saveDayRecord（日次記録の保存）", () => {
   it("達成率70%以上のとき、achieved: true で保存される", () => {
     const storage = makeStorage();
-    const tasks = [makeTask("1", true), makeTask("2", true), makeTask("3", false)];
+    const tasks = [
+      makeTask("1", true),
+      makeTask("2", true),
+      makeTask("3", false),
+    ];
     // 2/3 = 66.7% → 未達成のはずだが... 3件中2件=66.7%
     // 実際には70%未満なので achieved: false になる
 
@@ -194,5 +256,43 @@ describe("getTodayStr（今日の日付文字列）", () => {
   it("YYYY-MM-DD形式で返す", () => {
     vi.setSystemTime(new Date("2026-05-23T10:00:00"));
     expect(getTodayStr()).toBe("2026-05-23");
+  });
+});
+
+// ---- isHoliday のテスト ----
+describe("isHoliday", () => {
+  it("土曜日はtrueを返す", () => {
+    const saturday = new Date("2026-06-20");
+    expect(isHoliday(saturday)).toBe(true);
+  });
+
+  it("日曜日はtrueを返す", () => {
+    const sunday = new Date("2026-06-21");
+    expect(isHoliday(sunday)).toBe(true);
+  });
+
+  it("平日はfalseを返す", () => {
+    const monday = new Date("2026-06-22");
+    expect(isHoliday(monday)).toBe(false);
+  });
+});
+
+// ---- getActiveNotificationTimes のテスト ----
+describe("getActiveNotificationTimes", () => {
+  const settings = {
+    weekday: { enabled: true, times: ["18:00", "20:00"] },
+    holiday: { enabled: false, times: ["10:00", "12:00"] },
+  };
+  it("平日・ONのとき weekday の times を返す", () => {
+    const date = new Date("2026-06-19"); // 金曜日
+    expect(getActiveNotificationTimes(settings, date)).toEqual([
+      "18:00",
+      "20:00",
+    ]);
+  });
+
+  it("休日・OFFのとき空配列を返す", () => {
+    const date = new Date("2026-06-20"); // 土曜日
+    expect(getActiveNotificationTimes(settings, date)).toEqual([]);
   });
 });

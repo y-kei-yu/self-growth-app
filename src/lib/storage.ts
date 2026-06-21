@@ -1,10 +1,24 @@
-import { AppStorage, DayRecord, DailyTask, FixedTask } from "./types";
+import {
+  AppStorage,
+  DayRecord,
+  DailyTask,
+  FixedTask,
+  NotificationSettings,
+} from "./types";
 
 const STORAGE_KEY = "self-growth-app";
 
 export function getTodayStr(): string {
   return new Date().toISOString().split("T")[0];
 }
+
+const DEFAULT_NOTIFICATION_TIMES = [
+  "18:00",
+  "20:00",
+  "21:00",
+  "22:00",
+  "23:00",
+];
 
 function getDefaultStorage(): AppStorage {
   return {
@@ -13,6 +27,16 @@ function getDefaultStorage(): AppStorage {
     dayRecords: {},
     notificationPermission: false,
     lastResetDate: getTodayStr(),
+    notificationSettings: {
+      weekday: {
+        enabled: true,
+        times: [...DEFAULT_NOTIFICATION_TIMES],
+      },
+      holiday: {
+        enabled: true,
+        times: [...DEFAULT_NOTIFICATION_TIMES],
+      },
+    },
   };
 }
 
@@ -34,11 +58,11 @@ export function saveStorage(data: AppStorage): void {
 
 export function getOrCreateDailyTasks(
   storage: AppStorage,
-  date: string
+  date: string,
 ): DailyTask[] {
   if (storage.dailyTasks[date]) return storage.dailyTasks[date];
 
-  // Seed from fixed tasks
+  // 固定タスクから今日のタスクを作成
   const tasks: DailyTask[] = storage.fixedTasks.map((ft) => ({
     id: `${date}-${ft.id}`,
     title: ft.title,
@@ -63,7 +87,7 @@ export function isAchieved(tasks: DailyTask[]): boolean {
 export function saveDayRecord(
   storage: AppStorage,
   date: string,
-  tasks: DailyTask[]
+  tasks: DailyTask[],
 ): AppStorage {
   const rate = calcCompletionRate(tasks);
   const record: DayRecord = {
@@ -91,7 +115,8 @@ export function calcStreak(dayRecords: Record<string, DayRecord>): number {
       // Today: count only if achieved
       const rec = dayRecords[key];
       if (rec?.achieved) streak++;
-      else if (!rec) continue; // today not recorded yet, skip
+      else if (!rec)
+        continue; // today not recorded yet, skip
       else break;
     } else {
       const rec = dayRecords[key];
@@ -104,4 +129,19 @@ export function calcStreak(dayRecords: Record<string, DayRecord>): number {
 
 export function generateId(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+// 土曜(6)・日曜(0)なら休日
+export function isHoliday(date: Date): boolean {
+  const day = date.getDay();
+  return day === 0 || day === 6;
+}
+
+// その日（平日/休日）で有効な通知時刻一覧を返す
+export function getActiveNotificationTimes(
+  settings: NotificationSettings,
+  date: Date,
+): string[] {
+  const target = isHoliday(date) ? settings.holiday : settings.weekday;
+  return target.enabled ? target.times : [];
 }

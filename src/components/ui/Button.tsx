@@ -34,7 +34,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 ${VARIANT_CLASSES[variant]} ${className}`}
+      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors  ${VARIANT_CLASSES[variant]} disabled:opacity-50 disabled:bg-gray-300 disabled:dark:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed ${className}`}
     >
       {children}
     </button>

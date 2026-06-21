@@ -12,9 +12,11 @@ import { TodayView } from "@/components/features/TodayView";
 import { FixedView } from "@/components/features/FixedView";
 import { CalendarView } from "@/components/features/CalendarView";
 import { StreakBreakOverlay } from "@/components/features/StreakBreakOverlay";
+import { Check, Star, CalendarDays, Bell } from "lucide-react";
+import { NotificationSettingsView } from "@/components/features/NotificationSettingsView";
 
 // タブの種類を型として定義
-type Tab = "today" | "fixed" | "calendar";
+type Tab = "today" | "fixed" | "calendar" | "notifications";
 
 export default function Home() {
   // 現在選択中のタブ
@@ -35,10 +37,17 @@ export default function Home() {
     removeTodayTask,
     addFixedTask,
     removeFixedTask,
+    updateNotificationSettings,
   } = useTasks();
 
   // 通知管理フック（許可状態・通知スケジュール）
-  const { permission, askPermission } = useNotifications(achieved);
+  const { permission, askPermission } = useNotifications(
+    achieved,
+    storage?.notificationSettings ?? {
+      weekday: { enabled: true, times: [] },
+      holiday: { enabled: true, times: [] },
+    },
+  );
 
   // 連続達成日数（ストリーク）を計算
   const streak = storage ? calcStreak(storage.dayRecords) : 0;
@@ -102,6 +111,15 @@ export default function Home() {
           {tab === "calendar" && (
             <CalendarView dayRecords={storage?.dayRecords ?? {}} />
           )}
+          {tab === "notifications" && (
+            <NotificationSettingsView
+              settings={storage?.notificationSettings ?? {
+                weekday: { enabled: false, times: [] },
+                holiday: { enabled: false, times: [] },
+              }}
+              onChange={updateNotificationSettings}
+            />
+          )}
         </main>
 
         {/* 下部タブナビゲーション（固定表示） */}
@@ -112,70 +130,30 @@ export default function Home() {
         >
           {(
             [
-              { key: "today", label: "今日", icon: CheckIcon },
-              { key: "fixed", label: "固定", icon: StarIcon },
-              { key: "calendar", label: "カレンダー", icon: CalendarIcon },
+              { key: "today", label: "今日", icon: Check },
+              { key: "fixed", label: "固定", icon: Star },
+              { key: "calendar", label: "カレンダー", icon: CalendarDays },
+              { key: "notifications", label: "通知設定", icon: Bell },
             ] as const
           ).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               onClick={() => setTab(key)}
               // py-3・px-8 でタップしやすい大きさに
-              className={`flex flex-col items-center gap-1 px-8 pt-3 pb-1 text-xs transition-colors ${
-                tab === key
-                  ? "text-green-600 dark:text-green-400 font-semibold"
-                  : "text-gray-400 dark:text-gray-500"
-              }`}
+              className={`flex flex-col items-center gap-1 px-4 pt-3 pb-1 text-xs transition-colors ${tab === key
+                ? "text-green-600 dark:text-green-400 font-semibold"
+                : "text-gray-400 dark:text-gray-500"
+                }`}
             >
-              <Icon active={tab === key} />
+              <Icon
+                size={22}
+                className={tab === key ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"}
+              />
               <span>{label}</span>
             </button>
           ))}
         </nav>
       </div>
     </div>
-  );
-}
-
-// ---- アイコンコンポーネント ----
-// SVG（ベクター画像）で作ったシンプルなアイコン
-
-function CheckIcon({ active }: { active: boolean }) {
-  return (
-    <svg
-      width="22" height="22" viewBox="0 0 24 24" fill="none"
-      stroke={active ? "#16a34a" : "#9ca3af"}
-      strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function StarIcon({ active }: { active: boolean }) {
-  return (
-    <svg
-      width="22" height="22" viewBox="0 0 24 24"
-      fill={active ? "#16a34a" : "none"}
-      stroke={active ? "#16a34a" : "#9ca3af"}
-      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  );
-}
-
-function CalendarIcon({ active }: { active: boolean }) {
-  return (
-    <svg
-      width="22" height="22" viewBox="0 0 24 24" fill="none"
-      stroke={active ? "#16a34a" : "#9ca3af"}
-      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    >
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
   );
 }
