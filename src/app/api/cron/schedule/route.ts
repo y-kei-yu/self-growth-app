@@ -69,8 +69,6 @@ export async function GET() {
   for (const time of times) {
     // "HH:MM" を 時・分の数値に分解する
     const [hourStr, minuteStr] = time.split(":");
-    const hour = parseInt(hourStr, 10);
-    const minute = parseInt(minuteStr, 10);
 
     // JST の時刻を "+09:00" 付きで指定することで UTC に正しく変換される
     const notifyAt = new Date(`${todayJST}T${hourStr.padStart(2, "0")}:${minuteStr.padStart(2, "0")}:00+09:00`);
