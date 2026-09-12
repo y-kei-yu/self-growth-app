@@ -55,8 +55,8 @@ export async function GET() {
   // 今日のJST日付を "YYYY-MM-DD" 形式で取得する
   const todayJST = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
 
-  // 曜日判定用に使う（isHoliday へ渡す）
-  const nowJST = new Date(`${todayJST}T00:00:00+09:00`);
+  // UTC正午で作ることでUTC・JSTどちらでも同じ日付になり、getDay()が正しい曜日を返す
+  const nowJST = new Date(`${todayJST}T12:00:00Z`);
 
   // 今日送るべき時刻一覧（例: ["18:00", "20:00", "22:00"]）
   const times = getActiveTimes(settings, nowJST);
