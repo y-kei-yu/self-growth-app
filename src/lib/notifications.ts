@@ -91,6 +91,13 @@ export async function subscribeToPush(): Promise<boolean> {
     const reg = await navigator.serviceWorker.ready;
     const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
 
+    // デバッグ用: VAPIDキーの内容を確認（確認後に削除する）
+    window.alert(
+      `VAPID key length: ${vapidKey?.length ?? "undefined"}\n` +
+      `first char: "${vapidKey?.[0]}"\n` +
+      `last char: "${vapidKey?.[vapidKey.length - 1]}"`
+    );
+
     const subscription = await reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(vapidKey),
