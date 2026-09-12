@@ -31,7 +31,8 @@ function getActiveTimes(
   return target.enabled ? target.times : [];
 }
 
-export async function POST() {
+// Vercel CronはGETリクエストを送るのでGETで受け取る
+export async function GET() {
   const { qstash, redis } = getClients();
 
   // Push購読情報がなければ通知できないので早期リターン
