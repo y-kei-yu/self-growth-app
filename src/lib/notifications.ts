@@ -69,9 +69,10 @@ export async function showPressureNotification(): Promise<void> {
 
 // base64url文字列をUint8Arrayに変換する（iOSのpushManager.subscribeに必要）
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = atob(base64);
+  const trimmed = base64String.trim();
+  const padding = "=".repeat((4 - (trimmed.length % 4)) % 4);
+  const base64 = (trimmed + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
 
   const buffer = new ArrayBuffer(rawData.length);
   const uint8Array = new Uint8Array(buffer);
