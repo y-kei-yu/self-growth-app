@@ -91,13 +91,6 @@ export async function subscribeToPush(): Promise<boolean> {
     const reg = await navigator.serviceWorker.ready;
     const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
 
-    // デバッグ用: VAPIDキーの内容を確認（確認後に削除する）
-    window.alert(
-      `VAPID key length: ${vapidKey?.length ?? "undefined"}\n` +
-      `first char: "${vapidKey?.[0]}"\n` +
-      `last char: "${vapidKey?.[vapidKey.length - 1]}"`
-    );
-
     const subscription = await reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(vapidKey),
@@ -111,10 +104,6 @@ export async function subscribeToPush(): Promise<boolean> {
     return true;
   } catch (error) {
     console.error("subscribeToPush failed:", error);
-    // デバッグ用: iPhoneでエラー内容を確認するためのアラート（確認後に削除する）
-    if (typeof window !== "undefined") {
-      window.alert("subscribeToPush error: " + String(error));
-    }
     return false;
   }
 }
