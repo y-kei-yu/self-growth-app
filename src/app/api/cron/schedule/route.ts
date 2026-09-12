@@ -52,10 +52,11 @@ export async function GET() {
     return NextResponse.json({ ok: false, reason: "no notification settings" });
   }
 
-  // 今日のJST日付・曜日を取得する
-  const nowJST = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }),
-  );
+  // 今日のJST日付を "YYYY-MM-DD" 形式で取得する
+  const todayJST = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
+
+  // 曜日判定用に使う（isHoliday へ渡す）
+  const nowJST = new Date(`${todayJST}T00:00:00+09:00`);
 
   // 今日送るべき時刻一覧（例: ["18:00", "20:00", "22:00"]）
   const times = getActiveTimes(settings, nowJST);
@@ -71,9 +72,8 @@ export async function GET() {
     const hour = parseInt(hourStr, 10);
     const minute = parseInt(minuteStr, 10);
 
-    const notifyAt = new Date(nowJST);
-    notifyAt.setHours(hour, minute, 0, 0);
-
+    // JST の時刻を "+09:00" 付きで指定することで UTC に正しく変換される
+    const notifyAt = new Date(`${todayJST}T${hourStr.padStart(2, "0")}:${minuteStr.padStart(2, "0")}:00+09:00`);
     const notBefore = Math.floor(notifyAt.getTime() / 1000);
 
     // QStashにジョブを登録する（指定時刻に notificationUrl を呼ぶ）
