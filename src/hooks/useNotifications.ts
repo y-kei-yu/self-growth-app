@@ -8,6 +8,7 @@ import {
   requestNotificationPermission,
   registerServiceWorker,
   checkAndNotify,
+  subscribeToPush,
 } from "@/lib/notifications";
 import { NotificationSettings } from "@/lib/types";
 import { getActiveNotificationTimes } from "@/lib/storage";
@@ -56,6 +57,10 @@ export function useNotifications(
   const askPermission = useCallback(async () => {
     const granted = await requestNotificationPermission();
     setPermission(granted ? "granted" : "denied");
+
+    if (granted) {
+      await subscribeToPush();
+    }
     return granted;
   }, []);
 

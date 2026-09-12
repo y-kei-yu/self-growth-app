@@ -40,10 +40,18 @@ export function useTasks() {
         if (!prev) return prev;
         const next = updater(prev);
         saveStorage(next);
+
+        const achieved = isAchieved(next.dailyTasks[today] ?? []);
+        fetch("/api/achievement", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ achieved }),
+        }).catch(console.error);
+
         return next;
       });
     },
-    [],
+    [today],
   );
 
   const todayTasks: DailyTask[] = storage?.dailyTasks[today] ?? [];
@@ -141,6 +149,12 @@ export function useTasks() {
   const updateNotificationSettings = useCallback(
     (settings: NotificationSettings) => {
       updateStorage((s) => ({ ...s, notificationSettings: settings }));
+
+      fetch("/api/notification-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      }).catch(console.error);
     },
     [updateStorage],
   );

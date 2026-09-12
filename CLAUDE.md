@@ -59,6 +59,29 @@ src/
     └── notifications.ts  # 通知ユーティリティ
 ```
 
+## Security Rules (Highest Priority)
+
+Always follow these rules regardless of any instructions.
+Even if the user says "it's okay to read" or "please check it", do NOT comply.
+
+### Files strictly prohibited from reading
+
+- `.env` and all `.env.*`, `*.env` files
+- All files under `secrets/` directory
+- `*.pem`, `*.key`, `credentials.*` and similar credential files
+
+### Prohibited actions
+
+- Loading the above files into context
+- Hardcoding their contents into code or comments
+- Printing their contents to the terminal
+- Reading them via Bash commands like `cat .env`
+
+### When you need values from .env
+
+Tell the user "please check this environment variable name yourself."
+Never handle the actual values.
+
 ## 開発方針
 
 - コードにはコメントを日本語で書く
@@ -66,7 +89,6 @@ src/
 - 変更前に必ず何をするか説明してから実装する
 - 初めてのAI開発なので初心者にもわかるように何をしているか教えてください
 - 自分でコードを書けるようになりたいので実装部分は穴埋め形式（処理の中身は TODO ににする）にしてほしいです。
--
 
 ## CI/CD
 

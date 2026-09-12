@@ -67,6 +67,30 @@ export async function showPressureNotification(): Promise<void> {
   }
 }
 
+// PushSubscription（どのデバイスに送るかの情報）をサーバーに登録する
+// 呼び出し元: useNotificationsフック（通知許可が取れたとき）
+export async function subscribeToPush(): Promise<boolean> {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator))
+    return false;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    });
+
+    await fetch("/api/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(subscription),
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // 今日の通知済みの時間一覧をlocalStorageから取得する
 function getNotifiedTimes(): string[] {
   if (typeof window === "undefined") return [];
