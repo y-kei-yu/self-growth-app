@@ -6,12 +6,15 @@ import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 import { NotificationSettings } from "@/lib/types";
 
-const qstash = new Client({ token: process.env.QSTASH_TOKEN! });
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+// クライアントを返す関数（リクエスト時に初期化することでビルドエラーを防ぐ）
+function getClients() {
+  const qstash = new Client({ token: process.env.QSTASH_TOKEN! });
+  const redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL!,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  });
+  return { qstash, redis };
+}
 
 // 土曜(6)・日曜(0)かどうかを判定する
 function isHoliday(date: Date): boolean {
@@ -29,6 +32,8 @@ function getActiveTimes(
 }
 
 export async function POST() {
+  const { qstash, redis } = getClients();
+
   // Push購読情報がなければ通知できないので早期リターン
   const subscription = await redis.get("push-subscription");
   if (!subscription) {

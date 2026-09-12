@@ -5,17 +5,13 @@ import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 import webPush from "web-push";
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
-
-// VAPIDキーの設定（web-pushライブラリに認証情報を渡す）
-webPush.setVapidDetails(
-  `mailto:${process.env.VAPID_CONTACT_EMAIL}`,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!,
-);
+// Redisクライアントを返す関数（リクエスト時に初期化することでビルドエラーを防ぐ）
+function getRedis() {
+  return new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL!,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  });
+}
 
 // 心理的プレッシャーをかける文言
 const PRESSURE_MESSAGES = [
@@ -36,6 +32,15 @@ function getTodayAchievementKey(): string {
 
 // Redisから購読情報を取り出してPush通知を送る
 export async function POST() {
+  const redis = getRedis();
+
+  // VAPIDキーの設定（web-pushライブラリに認証情報を渡す）
+  webPush.setVapidDetails(
+    `mailto:${process.env.VAPID_CONTACT_EMAIL}`,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+    process.env.VAPID_PRIVATE_KEY!,
+  );
+
   const achievementVal = await redis.get<string>(getTodayAchievementKey());
   if (achievementVal === "true") {
     return NextResponse.json({ ok: false, reason: "already achieved" });
