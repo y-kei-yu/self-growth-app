@@ -46,11 +46,9 @@ export async function POST() {
     return NextResponse.json({ ok: false, reason: "already achieved" });
   }
 
-  // Push購読情報を取得する
-  const subscriptionJson = (await redis.get("push-subscription")) as
-    | string
-    | null;
-  if (!subscriptionJson) {
+  // Push購読情報を取得する（UpstashはJSONを自動でオブジェクトに変換して返す）
+  const subscription = await redis.get<webPush.PushSubscription>("push-subscription");
+  if (!subscription) {
     return NextResponse.json({ ok: false, reason: "no subscription" });
   }
 
@@ -59,7 +57,7 @@ export async function POST() {
 
   try {
     await webPush.sendNotification(
-      JSON.parse(subscriptionJson),
+      subscription,
       JSON.stringify({ title: "Self Growth", body: message }),
     );
     return NextResponse.json({ ok: true });
