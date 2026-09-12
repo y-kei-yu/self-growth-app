@@ -64,7 +64,7 @@ export async function GET() {
     return NextResponse.json({ ok: true, scheduled: [] });
   }
 
-  const notificationUrl = `${process.env.BASE_URL}/api/send-notification`;
+  const notificationUrl = `${process.env.BASE_URL?.replace(/\/$/, "")}/api/send-notification`;
 
   for (const time of times) {
     // "HH:MM" を 時・分の数値に分解する
