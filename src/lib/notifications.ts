@@ -103,6 +103,10 @@ export async function subscribeToPush(): Promise<boolean> {
     return true;
   } catch (error) {
     console.error("subscribeToPush failed:", error);
+    // デバッグ用: iPhoneでエラー内容を確認するためのアラート（確認後に削除する）
+    if (typeof window !== "undefined") {
+      window.alert("subscribeToPush error: " + String(error));
+    }
     return false;
   }
 }
