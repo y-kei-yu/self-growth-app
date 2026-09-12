@@ -67,6 +67,14 @@ export async function showPressureNotification(): Promise<void> {
   }
 }
 
+// base64url文字列をUint8Arrayに変換する（iOSのpushManager.subscribeに必要）
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
+}
+
 // PushSubscription（どのデバイスに送るかの情報）をサーバーに登録する
 // 呼び出し元: useNotificationsフック（通知許可が取れたとき）
 export async function subscribeToPush(): Promise<boolean> {
@@ -74,10 +82,11 @@ export async function subscribeToPush(): Promise<boolean> {
     return false;
   try {
     const reg = await navigator.serviceWorker.ready;
+    const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
 
     const subscription = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      applicationServerKey: urlBase64ToUint8Array(vapidKey),
     });
 
     await fetch("/api/subscribe", {
@@ -86,7 +95,8 @@ export async function subscribeToPush(): Promise<boolean> {
       body: JSON.stringify(subscription),
     });
     return true;
-  } catch {
+  } catch (error) {
+    console.error("subscribeToPush failed:", error);
     return false;
   }
 }
