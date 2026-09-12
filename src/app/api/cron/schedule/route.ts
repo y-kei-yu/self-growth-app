@@ -8,7 +8,10 @@ import { NotificationSettings } from "@/lib/types";
 
 // クライアントを返す関数（リクエスト時に初期化することでビルドエラーを防ぐ）
 function getClients() {
-  const qstash = new Client({ token: process.env.QSTASH_TOKEN! });
+  const qstash = new Client({
+    token: process.env.QSTASH_TOKEN!,
+    baseUrl: process.env.QSTASH_URL,
+  });
   const redis = new Redis({
     url: process.env.UPSTASH_REDIS_REST_URL!,
     token: process.env.UPSTASH_REDIS_REST_TOKEN!,
