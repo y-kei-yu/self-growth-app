@@ -3,6 +3,15 @@
 毎日のタスク管理と習慣化を支援する自己成長アプリです。
 **「サボり」を可視化してモチベーションを維持する** ことを目的にしています。
 
+🔗 **アプリ URL**: https://self-growth-app-phi.vercel.app/
+
+## スクリーンショット
+
+| 今日のタスク | 固定タスク | カレンダー | 通知設定 |
+| :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/today.webp" width="200" alt="今日のタスク画面"> | <img src="docs/screenshots/fixed.webp" width="200" alt="固定タスク画面"> | <img src="docs/screenshots/calendar.webp" width="200" alt="カレンダー画面"> | <img src="docs/screenshots/notification-settings.webp" width="200" alt="通知設定画面"> |
+| 達成率と今日のタスクを確認・追加 | 毎日自動で追加される繰り返しタスクを管理 | 達成🟩・未達成🟥を月ごとに確認 | 平日・休日ごとに通知時刻を設定 |
+
 ## 主な機能
 
 ### ✅ タスク管理
